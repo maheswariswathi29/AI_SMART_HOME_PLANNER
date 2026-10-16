@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f4ed"><title>Nivasa · Smart Home Planner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='flask.css', v='20261016-3') }}">
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="/"><span class="brand-mark">n</span><span>nivasa<span class="brand-dot">.</span></span></a><span class="save-state"><i></i> Your choices stay connected</span></header>
+  <main>
+    <section class="hero"><div class="hero-copy"><p class="eyebrow">PLAN YOUR BUILD BUDGET & HOME</p><h1>Plan your home.<br><em>Know your build cost.</em></h1><p class="hero-sub">Estimate your construction budget from your Visakhapatnam neighbourhood, built-up area and material quality. Then shape the rooms, colours and finishes and explore your connected 2D and 3D home plan.</p><div class="hero-note">✳ &nbsp; Every choice travels through to your design.</div></div><div class="hero-art" aria-hidden="true"><div class="sun"></div><div class="hills"></div><div class="house-art"><div class="roof-art"></div><div class="house-wall"><i></i><i></i><b></b></div></div><div class="tree tree-one">♧</div><div class="tree tree-two">♧</div><span class="art-caption">A place to call yours ↗</span></div></section>
+    <section class="studio">
+      <aside class="steps-panel"><p class="eyebrow">YOUR DESIGN JOURNEY</p><nav class="step-nav" id="stepNav" aria-label="Planner steps"></nav><div class="aside-tip"><span>✦</span><p><b>Designed around you</b><br>One home brief powers the whole experience.</p></div></aside>
+      <section class="workspace">
+        <div class="workspace-head"><div><p class="eyebrow" id="stageLabel">START WITH THE BASICS</p><h2 id="stageTitle">Tell us about your home</h2><p id="stageDescription" class="stage-description"></p></div><span class="live-badge"><i></i> Live design</span></div>
+        {% if error %}<div class="error-message" role="alert">{{ error }}</div>{% endif %}
+        <form id="wizardForm" action="{{ url_for('design') }}" method="post">
+          <section class="form-stage" data-stage="0">
+            <div class="field-grid three">
+              <div class="field"><label for="name">Your name <small>optional</small></label><input id="name" name="name" type="text" maxlength="60" placeholder="e.g. Aanya"></div>
+              <div class="field"><label for="location">Location <small>rate benchmark by Vizag area</small></label><select id="location" name="location" required>{% for loc in locations %}<option value="{{ loc }}" {% if loc == 'MVP Colony' %}selected{% endif %}>{{ loc }}</option>{% endfor %}</select></div>
+              <div class="field"><label for="area">Built-up area</label><div class="unit-control"><input id="area" name="area" type="number" min="800" max="2500" step="10" value="1500" required><select id="area_unit" name="area_unit" aria-label="Area unit"><option>sq ft</option><option>sq m</option></select></div><small class="field-hint" id="areaHint">Estimate range: 800–2,500 sq ft (74–232 sq m).</small></div>
+              <div class="field"><label for="floors">Floors</label><select id="floors" name="floors"><option value="1">1 floor</option><option value="2">2 floors</option></select></div>
+              <div class="field"><label for="bedrooms">Bedrooms</label><select id="bedrooms" name="bedrooms">{% for n in range(1,5) %}<option value="{{ n }}" {% if n == 3 %}selected{% endif %}>{{ n }} bedroom{{ '' if n == 1 else 's' }}</option>{% endfor %}</select></div>
+              <div class="field"><label for="bathrooms">Bathrooms</label><select id="bathrooms" name="bathrooms">{% for n in range(1,5) %}<option value="{{ n }}" {% if n == 2 %}selected{% endif %}>{{ n }} bathroom{{ '' if n == 1 else 's' }}</option>{% endfor %}</select></div>
+            </div>
+            <div class="section-heading"><span>OUTDOOR SPACES</span></div>
+            <div class="field-grid four">
+              <div class="field"><label for="balcony">Balcony</label><select id="balcony" name="balcony"><option>No</option><option selected>Yes</option></select></div>
+              <div class="field"><label for="balcony_area">Balcony area <small>optional</small></label><div class="measure"><input id="balcony_area" name="balcony_area" type="number" min="0" value="0"><span class="unit-label">sq ft</span></div></div>
+              <div class="field"><label for="garden_area">Garden area</label><div class="measure"><input id="garden_area" name="garden_area" type="number" min="0" value="180"><span class="unit-label">sq ft</span></div><small class="field-hint">Set 0 if you don’t want a garden.</small></div>
+              <div class="field"><label for="parking_spaces">Parking spaces</label><select id="parking_spaces" name="parking_spaces"><option value="0">None</option><option value="1" selected>1 car</option><option value="2">2 cars</option><option value="3">3 cars</option></select></div>
+              <div class="field"><label for="parking_area">Parking area</label><div class="measure"><input id="parking_area" name="parking_area" type="number" min="0" value="250"><span class="unit-label">sq ft</span></div></div>
+            </div>
+            <div class="info-note">Your built-up area means the total of every floor. We use a published Visakhapatnam construction rate band by neighbourhood and quality, then show a cost range. Land, loose furniture, permits and site-specific work are excluded.</div>
+          </section>
+
+          <section class="form-stage" data-stage="1" hidden>
+            <div class="group-label">CHOOSE YOUR PAINT STORY</div>
+            <div class="palette-grid">
+              {% set palettes = [('linen','Soft linen','Warm white · sage · oak','#eee5d3','#a8b4a1','#f8f4e9','#d6bd98','#798575'),('coastal','Coastal calm','Sea glass · air · sand','#e8eee8','#91aaa6','#f8f7ef','#cdbb9e','#687e7c'),('clay','Clay & olive','Terracotta · olive · earth','#e9dacc','#a45f45','#f4eee3','#ad8a68','#706c55'),('dusk','Evening dusk','Quiet blue · charcoal · ivory','#d9dbe0','#7a8796','#f0eee8','#9f9588','#505963'),('garden','Garden room','Leafy green · cream · wood','#e6e8d9','#788c62','#f8f4e9','#c8b391','#566e57'),('blush','Blush & walnut','Gentle rose · walnut · cream','#f0dfd9','#bc8174','#fff8ef','#987557','#6c5b55')] %}
+              {% for id,title,caption,c1,c2,c3,c4,c5 in palettes %}<label class="palette-card"><input type="radio" name="palette" value="{{ id }}" {% if id == 'linen' %}checked{% endif %}><span class="palette-content"><span class="swatch-row"><i style="--swatch:{{ c1 }}"></i><i style="--swatch:{{ c2 }}"></i><i style="--swatch:{{ c3 }}"></i><i style="--swatch:{{ c4 }}"></i><i style="--swatch:{{ c5 }}"></i></span><b>{{ title }}</b><small>{{ caption }}</small></span></label>{% endfor %}
+            </div>
+            <input type="hidden" name="palette_name" id="palette_name" value="Soft linen"><input type="hidden" name="palette_id" id="palette_id" value="linen">
+            <div class="custom-colors"><label>Main wall <input name="wall_color" id="wall_color" type="color" value="#eee5d3"></label><label>Accent wall <input name="accent_color" id="accent_color" type="color" value="#a8b4a1"></label><span id="paletteCaption">Warm whites, sage and natural oak</span></div>
+            <div class="palette-preview"><div class="mini-house" id="miniHouse"><i></i><b></b></div><p><b id="previewTitle">A first glimpse of your palette</b><small id="previewCaption">Soft linen on the walls, with a sage detail and warm timber underfoot.</small></p></div>
+          </section>
+
+          <section class="form-stage" data-stage="2" hidden>
+            <div class="group-label">CHOOSE THE CONSTRUCTION QUALITY FOR YOUR ESTIMATE</div>
+            <div class="option-row quality-row">{% for value,title,desc in [('Basic','Economy / basic','Practical everyday finishes'),('Standard','Everyday standard','Comfortable and balanced'),('Premium','Elevated premium','More considered finishes')] %}<label class="option-card"><input type="radio" name="material_quality" value="{{ value }}" {% if value == 'Standard' %}checked{% endif %}><span><b>{{ title }}</b><small>{{ desc }}</small></span></label>{% endfor %}</div>
+            <div class="section-heading"><span>THE FINISHES YOU’LL SEE IN YOUR DESIGN</span></div>
+            <div class="field-grid two">
+              <div class="field"><label for="floor_material">Flooring</label><select name="floor_material" id="floor_material"><option>Warm tile</option><option>Wood-look plank</option><option>Natural stone</option><option>Polished concrete</option></select></div>
+              <div class="field"><label for="wall_finish">Wall finish</label><select name="wall_finish" id="wall_finish"><option>Smooth plaster</option><option>Limewash</option><option>Textured paint</option><option>Exposed brick accent</option></select></div>
+              <div class="field"><label for="roof_material">Roof / ceiling</label><select name="roof_material" id="roof_material"><option>Concrete slab</option><option>Pitched tile roof</option><option>Metal standing seam</option></select></div>
+              <div class="field"><label for="window_material">Window frames</label><select name="window_material" id="window_material"><option>Aluminium</option><option>Timber</option><option>uPVC</option></select></div>
+            </div>
+            <div class="section-heading"><span>INTERIOR DESIGN</span></div>
+            <div class="field-grid two">
+              <div class="field"><label for="interior_type">Interior style (visual plan)</label><select name="interior_type" id="interior_type"><option>Normal</option><option selected>Modern</option><option>Luxury</option></select></div>
+              <div class="field"><label for="interior_style">Interior style</label><select name="interior_style" id="interior_style"><option>Modern organic</option><option>Scandinavian</option><option>Warm contemporary</option><option>Indian modern</option><option>Japandi</option><option>Classic home</option></select></div>
+              <div class="field"><label for="furniture">Furniture feel</label><select name="furniture" id="furniture"><option>Comfortable</option><option>Space-saving</option><option>Statement pieces</option></select></div>
+              <div class="field"><label for="planting">Garden approach</label><select name="planting" id="planting"><option>Low upkeep</option><option>Lush & layered</option><option>Edible garden</option></select></div>
+            </div>
+            <div class="info-note">Construction quality sets the estimate band. Interior style, paint, flooring and furniture choices personalize the visual plan; loose furnishings are outside the construction estimate.</div>
+          </section>
+
+          <section class="form-stage" data-stage="3" hidden>
+            <div class="vastu-intro"><span>✧</span><p><b>Vastu-inspired planning</b><br>Choose the directions you prefer for key rooms. We’ll give a traditional, general alignment guide using these choices, your home area and requested spaces.</p></div>
+            <div class="field-grid two">
+              <div class="field"><label for="facing">Home facing</label><select id="facing" name="facing">{% for d in ['North','North-East','East','South-East','South','South-West','West','North-West'] %}<option>{{ d }}</option>{% endfor %}</select></div>
+              <div class="field"><label for="entrance">Main entrance</label><select id="entrance" name="entrance">{% for d in ['North','East','South','West'] %}<option {% if d == 'North' %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+              <div class="field"><label for="kitchen_direction">Kitchen</label><select id="kitchen_direction" name="kitchen_direction">{% for d in ['South-East','North-West','North-East','West','East','South'] %}<option {% if d == 'South-East' %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+              <div class="field"><label for="bedroom_direction">Master bedroom</label><select id="bedroom_direction" name="bedroom_direction">{% for d in ['South-West','North','East','West','South','North-West'] %}<option {% if d == 'South-West' %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+              <div class="field"><label for="pooja_direction">Pooja / quiet room</label><select id="pooja_direction" name="pooja_direction">{% for d in ['North-East','East','West','South','North','South-West'] %}<option {% if d == 'North-East' %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+              <div class="field"><label for="bathroom_direction">Bathroom</label><select id="bathroom_direction" name="bathroom_direction">{% for d in ['North-West','West','North-East','South-East','South','East'] %}<option {% if d == 'North-West' %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+            </div>
+            <div class="info-note">These suggestions reflect traditional Vastu beliefs. They are not astrology, scientific predictions or a substitute for a site-specific architect.</div>
+          </section>
+
+          <div class="form-footer"><button class="button button-quiet" type="button" id="backButton" hidden>← Back</button><span class="footer-spacer"></span><span id="footerHint">You can change these details later.</span><button class="button button-primary" type="button" id="nextButton">Choose your palette <span>→</span></button><button class="button button-primary" type="submit" id="submitButton" hidden>Generate my home <span>✦</span></button></div>
+        </form>
+      </section>
+    </section>
+    <footer><span>Made with care, for the home you imagine.</span><span>NIVASA STUDIO · YOUR HOME, YOUR PLAN</span></footer>
+  </main>
+  <script src="{{ url_for('static', filename='planner.js', v='20261016-1') }}"></script>
+</body>
+</html>
