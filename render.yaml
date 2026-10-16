@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: nivasa-smart-home-planner
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /
